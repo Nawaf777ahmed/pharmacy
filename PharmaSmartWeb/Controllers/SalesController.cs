@@ -305,7 +305,7 @@ namespace PharmaSmartWeb.Controllers
                         catch (DbUpdateConcurrencyException)
                         {
                             await transaction.RollbackAsync();
-                            throw new Exception("نفدت الكمية أو تم بيع الصنف لعميل آخر في نفس اللحظة (تزامن)! يرجى التحقق من توفر المخزون وإعادة المحاولة.");
+                           throw new Exception("حدث تعارض في تحديث المخزون (ربما تم بيع الصنف من جهاز آخر في نفس اللحظة). يرجى تحديث الصفحة والمحاولة مرة أخرى.");
                         }
                         catch (Exception) { await transaction.RollbackAsync(); throw; }
                     });
@@ -366,7 +366,11 @@ namespace PharmaSmartWeb.Controllers
 
             try
             {
-                var options = new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                  var options = new System.Text.Json.JsonSerializerOptions 
+                { 
+                    PropertyNameCaseInsensitive = true,
+                    NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
+                };
                 var offlineData = System.Text.Json.JsonSerializer.Deserialize<OfflineSaleDto>(saleJson, options);
                 if (offlineData == null)
                     return BadRequest(new { success = false, message = "فاتورة غير صالحة." });
@@ -529,10 +533,15 @@ namespace PharmaSmartWeb.Controllers
                 payload.Amounts.Add(AmountSource.COGSAmount, totalCogs);
 
                 await _accountingEngine.ProcessTransactionAsync(payload);
-                await transaction.CommitAsync();
-            }
-            catch (Exception) { await transaction.RollbackAsync(); throw; }
-        });
+                            await transaction.CommitAsync();
+                        }
+                        catch (DbUpdateConcurrencyException)
+                        {
+                            await transaction.RollbackAsync();
+                            throw new Exception("تعارض في المزامنة: البيانات تغيرت على الخادم. سيتم إعادة المحاولة لاحقاً.");
+                        }
+                        catch (Exception) { await transaction.RollbackAsync(); throw; }
+                    });
 
         // ✅ حالة: جميع الأصناف نفدت — لم تُحفظ أي فاتورة
         if (newSaleId == 0)
@@ -566,13 +575,13 @@ namespace PharmaSmartWeb.Controllers
         // DTO لاستقبال بيانات الفاتورة الأوفلاين
         private class OfflineSaleDto
         {
-            public int CustomerId { get; set; }
+            public int? CustomerId { get; set; }
             public decimal Discount { get; set; }
             public decimal TaxAmount { get; set; }
             public decimal CashAmount { get; set; }
-            public int CashAccountId { get; set; }
+             public int? CashAccountId { get; set; }
             public decimal BankAmount { get; set; }
-            public int BankAccountId { get; set; }
+             public int? BankAccountId { get; set; }
             public List<OfflineSaleItemDto> Items { get; set; } = new();
         }
         private class OfflineSaleItemDto

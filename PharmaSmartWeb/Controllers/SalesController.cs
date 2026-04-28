@@ -250,14 +250,13 @@ namespace PharmaSmartWeb.Controllers
                                 _context.Stockmovements.Add(new Stockmovements { BranchId = ActiveBranchId, DrugId = item.DrugId, MovementDate = DateTime.Now, MovementType = "Sale Out", Quantity = -item.Quantity, UserId = sale.UserId, Notes = "مبيعات POS" });
                             }
 
-                            sale.TotalAmount = grossTotal;
-                            sale.NetAmount = grossTotal - sale.Discount + sale.TaxAmount;
-
+                                sale.TotalAmount = Math.Round(grossTotal, 2);
+                            sale.NetAmount = Math.Round(sale.TotalAmount - sale.Discount + sale.TaxAmount, 2);
                             _context.Sales.Add(sale);
                             await _context.SaveChangesAsync();
 
-                            decimal amountPaid = CashAmount + BankAmount;
-                            decimal remainingAmount = sale.NetAmount - amountPaid;
+                                                     decimal amountPaid = Math.Round(CashAmount + BankAmount, 2);
+                            decimal remainingAmount = Math.Round(sale.NetAmount - amountPaid, 2);
 
                             bool hasCustomer = sale.CustomerId is int cid && cid > 0;
 
@@ -419,7 +418,7 @@ namespace PharmaSmartWeb.Controllers
                     if (inventory != null && inventory.StockQuantity >= itemQty)
                     {
                         // ✅ إضافة قيمة الصنف للإجمالي فقط بعد التحقق من توفر المخزون
-                        grossTotal += item.Quantity * item.UnitPrice;
+                                     grossTotal += Math.Round(item.Quantity * item.UnitPrice, 2);
 
                         decimal costPerUnit = (inventory.AverageCost ?? 0)
                             / (inventory.Drug?.ConversionFactor > 0 ? inventory.Drug.ConversionFactor : 1);
@@ -473,16 +472,17 @@ namespace PharmaSmartWeb.Controllers
                     return; // سيُعالَج أدناه
                 }
 
-                sale.TotalAmount = grossTotal;
-                sale.NetAmount = grossTotal - sale.Discount + sale.TaxAmount;
+                      sale.TotalAmount = Math.Round(grossTotal, 2);
+                sale.NetAmount = Math.Round(sale.TotalAmount - sale.Discount + sale.TaxAmount, 2);
+
 
                 _context.Sales.Add(sale);
                 await _context.SaveChangesAsync();
                 newSaleId = sale.SaleId;
 
-                decimal cashAmt = offlineData.CashAmount;
-                decimal bankAmt = offlineData.BankAmount;
-                decimal credit = sale.NetAmount - cashAmt - bankAmt;
+                         decimal cashAmt = Math.Round(offlineData.CashAmount, 2);
+                decimal bankAmt = Math.Round(offlineData.BankAmount, 2);
+                decimal credit = Math.Round(sale.NetAmount - cashAmt - bankAmt, 2);
                 if (credit < 0) credit = 0;
 
                 if (cashAmt > 0 && offlineData.CashAccountId > 0)

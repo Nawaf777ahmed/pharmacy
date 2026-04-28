@@ -645,17 +645,28 @@
         const count = await getPendingSalesCount();
         if (count > 0) {
             const bar = document.getElementById('offlineBar');
-            bar.style.display = 'block';
-            bar.style.background = '#ecfdf5';
+
             bar.style.color = '#065f46';
             bar.style.borderBottom = '2px solid #6ee7b7';
-            bar.innerHTML = `🔄 جاري مزامنة ${count} فاتورة معلقة مع الخادم...`;
+         bar.innerHTML = `
+                <div style="display:flex; justify-content:center; align-items:center; gap:12px;">
+                    <span>🔄 جاري مزامنة ${count} فاتورة معلقة مع الخادم...</span>
+                    <button type="button" onclick="handleClearPending()" style="background:#ef4444; color:white; border:none; padding:4px 10px; border-radius:2px; font-size:11px; cursor:pointer; font-weight:700;">مسح الفواتير المعلقة</button>
+                </div>
+            `;
 
             const result = await syncPendingSales(antiForgeryToken);
             
             if (result.synced > 0) {
-                bar.innerHTML = `✅ تمت مزامنة ${result.synced} فاتورة بنجاح!`;
-                setTimeout(() => { bar.style.display = 'none'; }, 4000);
+               bar.innerHTML = `✅ تم التزامن بنجاح! جاري تسجيل الخروج لتحديث البيانات...`;
+                setTimeout(() => { window.location.href = '/Account/Logout'; }, 2000);
+            } else if (result.failed > 0) {
+                bar.innerHTML = `
+                    <div style="display:flex; justify-content:center; align-items:center; gap:12px;">
+                        <span style="color:#dc2626;">⚠ فشل مزامنة ${result.failed} فاتورة (تعارض بيانات).</span>
+                        <button type="button" onclick="handleClearPending()" style="background:#dc2626; color:white; border:none; padding:4px 10px; border-radius:2px; font-size:11px; cursor:pointer; font-weight:700;">مسح الكل للبدء من جديد</button>
+                    </div>
+                `;
             } else {
                 bar.style.display = 'none';
             }
@@ -680,8 +691,47 @@
             }).catch(() => {});
         }
         updateOfflineBar();
+        // 🔄 مزامنة تلقائية عند فتح الصفحة في حال وجود إنترنت
+        if (navigator.onLine) {
+            const count = await getPendingSalesCount();
+            if (count > 0) {
+                const bar = document.getElementById('offlineBar');
+                bar.style.display = 'block';
+                bar.style.background = '#ecfdf5';
+                bar.style.color = '#065f46';
+                bar.style.borderBottom = '2px solid #6ee7b7';
+                bar.innerHTML = `🔄 جاري مزامنة ${count} فاتورة معلقة مع الخادم...`;
+                const result = await syncPendingSales(antiForgeryToken);
+                
+                if (result.synced > 0) {
+                    bar.innerHTML = `✅ تم التزامن بنجاح! جاري تسجيل الخروج لتحديث البيانات...`;
+                    setTimeout(() => { window.location.href = '/Account/Logout'; }, 2000);
+                } else {
+                    bar.style.display = 'none';
+                }
+            }
+        }
     })();
-
+        // 🔄 مزامنة تلقائية عند فتح الصفحة في حال وجود إنترنت
+        if (navigator.onLine) {
+            const count = await getPendingSalesCount();
+            if (count > 0) {
+                const bar = document.getElementById('offlineBar');
+                bar.style.display = 'block';
+                bar.style.background = '#ecfdf5';
+                bar.style.color = '#065f46';
+                bar.style.borderBottom = '2px solid #6ee7b7';
+                bar.innerHTML = `🔄 جاري مزامنة ${count} فاتورة معلقة مع الخادم...`;
+                const result = await syncPendingSales(antiForgeryToken);
+                
+                if (result.synced > 0) {
+                    bar.innerHTML = `✅ تم التزامن بنجاح! جاري تسجيل الخروج لتحديث البيانات...`;
+                    setTimeout(() => { window.location.href = '/Account/Logout'; }, 2000);
+                } else {
+                    bar.style.display = 'none';
+                }
+            }
+        }
     async function submitPOS() {
         const btn = document.getElementById('btnSaveSales');
         if (btn.disabled) return;
@@ -769,7 +819,7 @@
             }
         } else {
             const saleData = {
-                CustomerId: customerId,
+               CustomerId: parseInt(customerId) || null,
                 Discount: discount,
                 TaxAmount: tax,
                 CashAmount: cashVal,

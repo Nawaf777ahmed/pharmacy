@@ -119,15 +119,7 @@
                                     <span class="material-symbols-outlined" style="font-size:13px;">edit</span>
                                     تعديل
                                 </a>
-                                @if (item.Drugs == null || item.Drugs.Count == 0)
-                                {
-                                    <form asp-action="Delete" asp-route-id="@item.GroupId" method="post"
-                                          onsubmit="return confirm('تأكيد الحذف للمجموعة العلاجية؟');" style="display:inline;">
-                                        <button type="submit" class="btn-sm btn-del">
-                                            <span class="material-symbols-outlined" style="font-size:13px;">delete</span>
-                                        </button>
-                                    </form>
-                                }
+                               
                             </div>
                         </td>
                     </tr>

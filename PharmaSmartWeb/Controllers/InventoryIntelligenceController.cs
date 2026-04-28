@@ -737,7 +737,7 @@ namespace PharmaSmartWeb.Controllers
                     DrugId       = g.Key.DrugId,
                     DrugName     = g.Key.DrugName,
                     MinStock     = g.Key.MinimumStockLevel,
-                    IsLifeSaving = g.Key.IsLifeSaving ?? false,
+                    IsLifeSaving = g.Key.IsLifeSaving,
                     MainUnit     = g.Key.MainUnit ?? "باكت",
                     SubUnit      = g.Key.SubUnit ?? "شريط",
                     ConversionFactor = g.Key.ConversionFactor,
@@ -920,7 +920,7 @@ namespace PharmaSmartWeb.Controllers
                     item.unit     = drugEntity.MainUnit ?? "وحدة";
                     item.subUnit  = drugEntity.SubUnit ?? "";
                     item.conversionFactor = drugEntity.ConversionFactor;
-                    item.isLifeSaving = drugEntity.IsLifeSaving ?? false;
+                   item.isLifeSaving = drugEntity.IsLifeSaving;
 
                     // سعر التكلفة من آخر تشغيلة مشتريات
                     var lastPurchase = await _context.Purchasedetails

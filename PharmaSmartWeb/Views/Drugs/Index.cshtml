@@ -203,15 +203,7 @@
                                         <span class="material-symbols-outlined" style="font-size:13px;">edit</span>
                                     </button>
                                 }
-                                @if ((await AuthorizationService.AuthorizeAsync(User, "CanDeleteDrug")).Succeeded)
-                                {
-                                    <form asp-action="Delete" asp-route-id="@item.DrugId" method="post"
-                                          onsubmit="confirmDeleteDrug(event, this);" style="display:inline;">
-                                        <button type="submit" class="btn-sm btn-del">
-                                            <span class="material-symbols-outlined" style="font-size:13px;">delete</span>
-                                        </button>
-                                    </form>
-                                }
+                               
                             </div>
                         </td>
                     </tr>

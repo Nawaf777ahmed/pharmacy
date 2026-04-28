@@ -130,3 +130,13 @@ async function syncPendingSales(antiForgeryToken) {
     }
     return { synced, failed };
 }
+async function clearAllPendingSales() {
+    const database = await openOfflineDB();
+    return new Promise((resolve, reject) => {
+        const tx = database.transaction(STORE_PENDING, 'readwrite');
+        const store = tx.objectStore(STORE_PENDING);
+        const req = store.clear();
+        req.onsuccess = () => resolve();
+        req.onerror = e => reject(e.target.error);
+    });
+}

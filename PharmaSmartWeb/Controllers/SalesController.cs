@@ -233,8 +233,7 @@ namespace PharmaSmartWeb.Controllers
 
                             foreach (var item in sale.Saledetails)
                             {
-                                grossTotal += (item.Quantity * item.UnitPrice);
-
+                                grossTotal += Math.Round(item.Quantity * item.UnitPrice, 2);
                                 if (!inventoriesDict.TryGetValue(item.DrugId, out var inventory))
                                     throw new Exception($"الصنف (DrugId: {item.DrugId}) غير موجود في مخزون الفرع الحالي ({ActiveBranchId}).");
 
